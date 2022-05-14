@@ -7,6 +7,7 @@ import plotly.graph_objects as go
 import numpy as np
 import csv
 
+
 class tickeranalysis:
     def __init__(self, ticker):
         self.ticker = ticker
@@ -27,7 +28,7 @@ class tickeranalysis:
 
     def plot(self, df):
         logging.info("plot: started")
-        logging.info(df)
+        df.columns = [x.lower() for x in df.columns]
         fig = make_subplots(rows=2, cols=1)
         # price Line
         fig.append_trace(
