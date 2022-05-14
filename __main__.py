@@ -1,9 +1,10 @@
-from ticker import tickeranalysis
+from ticker import technicalanalysis as ta
+from ticker import tickerdata as td
+from ticker import plotter as pl
 
 
-x = tickeranalysis.tickeranalysis('AMZN')
-df = x.gettickerdata()
-x.exportdata(df,'tickerdata.csv')
-df = x.technicalanalysis(df)
-x.exportdata(df,'analysisdata.csv')
-x.plot(df)
+df = td.tickerdata('AMZN').gettickerdata()
+df.to_csv('tickerdata.csv')
+df = ta.technicalanalysis().analyze(df)
+df.to_csv('analysisdata.csv')
+pl.plotter().plot(df)

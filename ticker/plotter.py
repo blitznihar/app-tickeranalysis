@@ -1,30 +1,12 @@
 
 import logging
-import yfinance as yf
 import pandas_ta as ta
 from plotly.subplots import make_subplots
 import plotly.graph_objects as go
 import numpy as np
-import csv
 
 
-class tickeranalysis:
-    def __init__(self, ticker):
-        self.ticker = ticker
-
-    def gettickerdata(self, period='1y', interval='1d'):
-        logging.info("technicalanalysis: fetching")
-        return yf.Ticker(self.ticker).history(interval=interval, period=period)[map(str.title, ['open', 'close', 'low', 'high', 'volume'])]
-
-    def technicalanalysis(self, df):
-        logging.info("technicalanalysis: starting")
-        df.ta.macd(close='close', fast=12, slow=26, append=True)
-        logging.info("technicalanalysis: done")
-        return df
-
-    def exportdata(self, df, filename='file_name.csv'):
-        logging.info("exportdata: {0}", format(filename))
-        df.to_csv(filename)
+class plotter:
 
     def plot(self, df):
         logging.info("plot: started")
