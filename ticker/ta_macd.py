@@ -10,6 +10,7 @@ import numpy as np
 import csv
 import plotly.figure_factory as ff
 
+
 class macd:
 
     def getanalysisdata(self, df):
@@ -27,8 +28,8 @@ class macd:
             shared_xaxes=True,
             vertical_spacing=0.05,
             specs=[[{"type": "scatter"}],
-                    [{"type": "scatter"}],
-                    [{"type": "table"}]]
+                   [{"type": "scatter"}],
+                   [{"type": "table"}]]
         )
         # price Line
         fig.append_trace(
@@ -86,7 +87,7 @@ class macd:
                 x=df.index,
                 y=df['buysignal'],
                 marker_symbol='triangle-up',
-                marker_line_width=2, 
+                marker_line_width=2,
                 marker_size=10,
                 marker_color='purple',
                 showlegend=True,
@@ -98,7 +99,7 @@ class macd:
                 x=df.index,
                 y=df['sellsignal'],
                 marker_symbol='triangle-down',
-                marker_line_width=2, 
+                marker_line_width=2,
                 marker_size=10,
                 marker_color='pink',
                 showlegend=True
@@ -130,13 +131,14 @@ class macd:
                 )
             ), title_text=ticker
         )
-        
+
         table_obj = go.Table(
-            header=dict(values=list(dfaccounting.columns), fill_color='paleturquoise', align='left', font=dict(size=10)),
+            header=dict(values=list(dfaccounting.columns),
+                        fill_color='paleturquoise', align='left', font=dict(size=10)),
             cells=dict(
-                values=dfaccounting.transpose().values.tolist(), 
-                fill_color='lavender', 
-                align='left', 
+                values=dfaccounting.transpose().values.tolist(),
+                fill_color='lavender',
+                align='left',
                 font=dict(size=10))
         )
         fig.append_trace(table_obj, row=3, col=1)
@@ -144,26 +146,17 @@ class macd:
         fig.update_layout(layout)
         fig.show()
 
-    def plottable(self, dfaccounting):
-        fig = make_subplots(rows=1, cols=1)
-        table_obj = go.Table(
-            header=dict(values=list(dfaccounting.columns), fill_color='paleturquoise', align='left'),
-            cells=dict(values=dfaccounting.transpose().values.tolist(), fill_color='lavender', align='left')
-        )
-        fig.append_trace(table_obj, row=3, col=1)
-        fig.show()
-    
     def applystrategy(self, df):
         df.columns = [x.lower() for x in df.columns]
         signal_Buy = []
         signal_Sell = []
         position = False
         for i in range(len(df)):
-            if df['macdh_12_26_9'][i-1]>0 and df['macdh_12_26_9'][i]<0 and position == True:
+            if df['macdh_12_26_9'][i-1] > 0 and df['macdh_12_26_9'][i] < 0 and position == True:
                 signal_Sell.append(df['open'][i])
                 signal_Buy.append(np.nan)
                 position = False
-            elif df['macdh_12_26_9'][i-1]<0 and df['macdh_12_26_9'][i]>0: 
+            elif df['macdh_12_26_9'][i-1] < 0 and df['macdh_12_26_9'][i] > 0:
                 signal_Buy.append(df['open'][i])
                 signal_Sell.append(np.nan)
                 position = True
@@ -176,31 +169,42 @@ class macd:
 
     def strategyanalyzer(self, df):
         df.columns = [x.lower() for x in df.columns]
-        signal_Buy = []
-        signal_Sell = []
         buyingdate = []
         sellingdate = []
         buyingprice = []
         sellingprice = []
-        profit = [] 
+        profit = []
+        total = []
         for i in range(len(df)):
-           if df['buysignal'][i] > 0:
-               buyingprice.append(df['buysignal'][i])
-               buyingpricei = df['buysignal'][i]
-               buyingdate.append(df.index[i])
-           elif df['sellsignal'][i] > 0:
+            if df['buysignal'][i] > 0:
+                buyingprice.append(df['buysignal'][i])
+                buyingpricei = df['buysignal'][i]
+                buyingdate.append(df.index[i])
+            elif df['sellsignal'][i] > 0:
                 sellingprice.append(df['sellsignal'][i])
-                sellingpricei=df['sellsignal'][i]
+                sellingpricei = df['sellsignal'][i]
                 sellingdate.append(df.index[i])
                 profit.append(sellingpricei - buyingpricei)
-        print(sellingdate)
-        print(profit)
+        for i in range(len(profit)):
+            if(len(total)==0):
+                total.append(profit[i])
+            else:
+                total.append(profit[i] + total[i-1])
+
         accountingset = {
             'buyingprice': buyingprice,
             'buydate': buyingdate,
             'sellingprice': sellingprice,
             'selldate': sellingdate,
-            'profit': profit
-            }
+            'profit': profit,
+            'total': total
+        }
+
         dfaccounting = pd.DataFrame(accountingset)
+        dfaccounting['buydate'] = dfaccounting['buydate'].dt.strftime('%m-%d-%Y')
+        dfaccounting['selldate'] = dfaccounting['selldate'].dt.strftime('%m-%d-%Y')
+        dfaccounting['sellingprice'] = dfaccounting['sellingprice'].apply(lambda x:round(x,2))
+        dfaccounting['buyingprice'] = dfaccounting['buyingprice'].apply(lambda x:round(x,2))
+        dfaccounting['profit'] = dfaccounting['profit'].apply(lambda x:round(x,2))
+        dfaccounting['total'] = dfaccounting['total'].apply(lambda x:round(x,2))
         return dfaccounting
