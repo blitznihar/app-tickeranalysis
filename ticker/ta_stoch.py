@@ -19,7 +19,7 @@ class stoch:
         logging.info("technicalanalysis: done")
         return df
 
-    def plot(self, df, ticker, dfaccounting):
+    def plot(self, df, ticker):
         logging.info("plot: started")
         df.columns = [x.lower() for x in df.columns]
         # Create our primary chart
