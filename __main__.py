@@ -6,33 +6,28 @@ logging.basicConfig(level=logging.DEBUG)
 
 
 class main:
-    def macd(self, ticker, techanalysis):
-        df = td.tickerdata(ticker).gettickerdata()
-        df.to_csv(techanalysis+'_'+ticker+'tickerdata.csv')
-        macd = tamacd.macd()
-        df = macd.getanalysisdata(df)
-        df.to_csv(techanalysis+'_'+ticker+'analysisdata.csv')
-        df = macd.applystrategy(df)
-        df.to_csv(techanalysis+'_'+ticker+'strategy.csv')
-        dfaccounting = macd.strategyanalyzer(df)
-        print(dfaccounting)
-        dfaccounting.to_csv(techanalysis+'_'+ticker+'accounting.csv')
-        macd.plot(df, ticker, dfaccounting)
 
-    def stoch(self, ticker, techanalysis):
+    def fetchdata(self, ticker):
         df = td.tickerdata(ticker).gettickerdata()
-        df.to_csv(techanalysis+'_'+ticker+'tickerdata.csv')
-        stoch = tastoch.stoch()
-        df = stoch.getanalysisdata(df)
-        df.to_csv(techanalysis+'_'+ticker+'analysisdata.csv')
-        df = stoch.applystrategy(df)
-        df.to_csv(techanalysis+'_'+ticker+'strategy.csv')
-        dfaccounting = stoch.strategyanalyzer(df)
-        print(dfaccounting)
-        dfaccounting.to_csv(techanalysis+'_'+ticker+'accounting.csv')
-        stoch.plot(df, ticker, dfaccounting)
+        df.to_csv(ticker+'tickerdata.csv')
+        return df
+
+    def process(self, ticker, df, technicalanalysis):
+        df = technicalanalysis.getanalysisdata(df)   
+        df.to_csv(technicalanalysis.gettatype()+'_'+ticker+'analysisdata.csv')
+        df = technicalanalysis.applystrategy(df)
+        df.to_csv(technicalanalysis.gettatype() +'_'+ticker+'strategy.csv')
+        dfaccounting = technicalanalysis.strategyanalyzer(df)
+        dfaccounting.to_csv(technicalanalysis.gettatype()+'_'+ticker+'accounting.csv')
+        technicalanalysis.plot(df, ticker, dfaccounting)
 
 
 x = main()
-x.macd('QQQ', 'macd')
-x.stoch('QQQ', 'stoch')
+ticker = 'QQQ'
+df = x.fetchdata(ticker)
+
+technicalanalysis = tastoch.stoch()
+x.process(ticker,  df, technicalanalysis)
+
+technicalanalysis = tamacd.macd()
+x.process(ticker, df, technicalanalysis)

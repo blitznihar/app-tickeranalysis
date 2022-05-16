@@ -54,11 +54,12 @@ class common:
                 name='open',
             ), row=1, col=1  # <------------ upper chart
         )
+
         # Fast Signal (%k)
         fig.append_trace(
             go.Scatter(
                 x=df.index,
-                y=df['stochk_14_3_3'],
+                y=df[self.fastline()],
                 line=dict(color='#ff9900', width=2),
                 name='fast',
             ), row=2, col=1  # <------------ lower chart
@@ -67,11 +68,12 @@ class common:
         fig.append_trace(
             go.Scatter(
                 x=df.index,
-                y=df['stochd_14_3_3'],
+                y=df[self.slowline()],
                 line=dict(color='#000000', width=2),
                 name='slow'
             ), row=2, col=1  # <------------ lower chart
         )
+
         fig.append_trace(
             go.Scatter(
                 mode='markers',
@@ -117,7 +119,7 @@ class common:
                 rangeslider=dict(
                     visible=False
                 )
-            ), title_text=ticker
+            ), title_text=ticker +'-'+ self.gettatype()
         )
         table_obj = go.Table(
             header=dict(values=list(dfaccounting.columns),
@@ -139,11 +141,11 @@ class common:
         signal_Sell = []
         position = False
         for i in range(len(df)):
-            if df['stochk_14_3_3'][i-1] > df['stochd_14_3_3'][i-1] and df['stochk_14_3_3'][i] < df['stochd_14_3_3'][i] and position == True:
+            if self.sellrule(df,i) and position == True:
                 signal_Sell.append(df['open'][i])
                 signal_Buy.append(np.nan)
                 position = False
-            elif df['stochk_14_3_3'][i-1] < df['stochd_14_3_3'][i-1] and df['stochk_14_3_3'][i] > df['stochd_14_3_3'][i]:
+            elif self.buyrule(df,i):
                 signal_Buy.append(df['open'][i])
                 signal_Sell.append(np.nan)
                 position = True
@@ -213,11 +215,17 @@ class common:
     def runanalysis(self, df):
         pass
 
-    def normalizedataforstrategy(self, df):
-        pass
-    
-    def buyrule(self, df):
+    def buyrule(self, df, i):
         pass
 
-    def sellrule(self, df):
+    def sellrule(self, df, i):
+        pass
+
+    def fastline(self):
+        pass
+
+    def slowline(self):
+        pass
+
+    def gettatype(self):
         pass
