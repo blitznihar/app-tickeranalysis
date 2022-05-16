@@ -2,7 +2,6 @@
 import logging
 from pickletools import markobject
 from symtable import Symbol
-
 import pandas_ta as ta
 import pandas as pd
 from plotly.subplots import make_subplots
@@ -10,12 +9,17 @@ import plotly.graph_objects as go
 import numpy as np
 import csv
 import plotly.figure_factory as ff
-from ticker import ta_common as ta
-
-class stoch(ta.common):
 
 
-    def plot(self, df, ticker, dfaccounting): #COMMON WITH LOT OF MODIFICATIONS
+class common:
+
+    def getanalysisdata(self, df):  # COMMON
+        logging.info("technicalanalysis: starting")
+        df = self.runanalysis(df)
+        logging.info("technicalanalysis: done")
+        return df
+
+    def plot(self, df, ticker, dfaccounting):  # COMMON WITH LOT OF MODIFICATIONS
         logging.info("plot: started")
         df.columns = [x.lower() for x in df.columns]
         # Create our primary chart
@@ -57,7 +61,7 @@ class stoch(ta.common):
                 y=df['stochk_14_3_3'],
                 line=dict(color='#ff9900', width=2),
                 name='fast',
-            ), row=2, col=1  #  <------------ lower chart
+            ), row=2, col=1  # <------------ lower chart
         )
         # Slow signal (%d)
         fig.append_trace(
@@ -66,7 +70,7 @@ class stoch(ta.common):
                 y=df['stochd_14_3_3'],
                 line=dict(color='#000000', width=2),
                 name='slow'
-            ), row=2, col=1  #<------------ lower chart
+            ), row=2, col=1  # <------------ lower chart
         )
         fig.append_trace(
             go.Scatter(
@@ -98,8 +102,10 @@ class stoch(ta.common):
         fig.add_hline(y=0, col=1, row=2, line_color="#666", line_width=2)
         fig.add_hline(y=100, col=1, row=2, line_color="#666", line_width=2)
         # Add overbought/oversold
-        fig.add_hline(y=20, col=1, row=2, line_color='#336699', line_width=2, line_dash='dash')
-        fig.add_hline(y=80, col=1, row=2, line_color='#336699', line_width=2, line_dash='dash')
+        fig.add_hline(y=20, col=1, row=2, line_color='#336699',
+                      line_width=2, line_dash='dash')
+        fig.add_hline(y=80, col=1, row=2, line_color='#336699',
+                      line_width=2, line_dash='dash')
         # Make it pretty
         layout = go.Layout(
             plot_bgcolor='#efefef',
@@ -127,7 +133,7 @@ class stoch(ta.common):
         # View our chart in the system default HTML viewer (Chrome, Firefox, etc.)
         fig.show()
 
-    def applystrategy(self, df): #COMMON WITH RULE MODIFICATIONS
+    def applystrategy(self, df):  # COMMON WITH RULE MODIFICATIONS
         df.columns = [x.lower() for x in df.columns]
         signal_Buy = []
         signal_Sell = []
@@ -148,7 +154,7 @@ class stoch(ta.common):
         df['sellsignal'] = signal_Sell
         return df
 
-    
+    def strategyanalyzer(self, df):  # COMMON
         df.columns = [x.lower() for x in df.columns]
         buyingdate = []
         sellingdate = []
@@ -167,12 +173,12 @@ class stoch(ta.common):
                 sellingdate.append(df.index[i])
                 profit.append(sellingpricei - buyingpricei)
         for i in range(len(profit)):
-            if(len(total)==0):
+            if(len(total) == 0):
                 total.append(profit[i])
             else:
                 total.append(profit[i] + total[i-1])
 
-# there is a buy but no sell so need to manipulate 
+# there is a buy but no sell so need to manipulate
 
         if len(buyingprice) > len(sellingprice):
             sellingprice.append(np.nan)
@@ -190,14 +196,28 @@ class stoch(ta.common):
         }
 
         dfaccounting = pd.DataFrame(accountingset)
-        dfaccounting['buydate'] = dfaccounting['buydate'].dt.strftime('%m-%d-%Y')
-        dfaccounting['selldate'] = dfaccounting['selldate'].dt.strftime('%m-%d-%Y')
-        dfaccounting['sellingprice'] = dfaccounting['sellingprice'].apply(lambda x:round(x,2))
-        dfaccounting['buyingprice'] = dfaccounting['buyingprice'].apply(lambda x:round(x,2))
-        dfaccounting['profit'] = dfaccounting['profit'].apply(lambda x:round(x,2))
-        dfaccounting['total'] = dfaccounting['total'].apply(lambda x:round(x,2))
+        dfaccounting['buydate'] = dfaccounting['buydate'].dt.strftime(
+            '%m-%d-%Y')
+        dfaccounting['selldate'] = dfaccounting['selldate'].dt.strftime(
+            '%m-%d-%Y')
+        dfaccounting['sellingprice'] = dfaccounting['sellingprice'].apply(
+            lambda x: round(x, 2))
+        dfaccounting['buyingprice'] = dfaccounting['buyingprice'].apply(
+            lambda x: round(x, 2))
+        dfaccounting['profit'] = dfaccounting['profit'].apply(
+            lambda x: round(x, 2))
+        dfaccounting['total'] = dfaccounting['total'].apply(
+            lambda x: round(x, 2))
         return dfaccounting
 
     def runanalysis(self, df):
-        df.ta.stoch(high='high', low='low', k=14, d=3, append=True)
-        return df
+        pass
+
+    def normalizedataforstrategy(self, df):
+        pass
+    
+    def buyrule(self, df):
+        pass
+
+    def sellrule(self, df):
+        pass

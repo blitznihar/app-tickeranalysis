@@ -9,15 +9,9 @@ import plotly.graph_objects as go
 import numpy as np
 import csv
 import plotly.figure_factory as ff
+from ticker import ta_common as ta
 
-
-class macd:
-
-    def getanalysisdata(self, df):
-        logging.info("technicalanalysis: starting")
-        df.ta.macd(close='close', fast=12, slow=26, append=True)
-        logging.info("technicalanalysis: done")
-        return df
+class macd(ta.common):
 
     def plot(self, df, ticker, dfaccounting):
         logging.info("plot: started")
@@ -166,50 +160,6 @@ class macd:
         df['buysignal'] = signal_Buy
         df['sellsignal'] = signal_Sell
         return df
-
-    def strategyanalyzer(self, df):
-        df.columns = [x.lower() for x in df.columns]
-        buyingdate = []
-        sellingdate = []
-        buyingprice = []
-        sellingprice = []
-        profit = []
-        total = []
-        for i in range(len(df)):
-            if df['buysignal'][i] > 0:
-                buyingprice.append(df['buysignal'][i])
-                buyingpricei = df['buysignal'][i]
-                buyingdate.append(df.index[i])
-            elif df['sellsignal'][i] > 0:
-                sellingprice.append(df['sellsignal'][i])
-                sellingpricei = df['sellsignal'][i]
-                sellingdate.append(df.index[i])
-                profit.append(sellingpricei - buyingpricei)
-        for i in range(len(profit)):
-            if(len(total)==0):
-                total.append(profit[i])
-            else:
-                total.append(profit[i] + total[i-1])
-        if len(buyingprice) > len(sellingprice):
-            sellingprice.append(np.nan)
-            profit.append(np.nan)
-            total.append(total[len(total)-1])
-            sellingdate.append(pd.NaT)
-            
-        accountingset = {
-            'buyingprice': buyingprice,
-            'buydate': buyingdate,
-            'sellingprice': sellingprice,
-            'selldate': sellingdate,
-            'profit': profit,
-            'total': total
-        }
-
-        dfaccounting = pd.DataFrame(accountingset)
-        dfaccounting['buydate'] = dfaccounting['buydate'].dt.strftime('%m-%d-%Y')
-        dfaccounting['selldate'] = dfaccounting['selldate'].dt.strftime('%m-%d-%Y')
-        dfaccounting['sellingprice'] = dfaccounting['sellingprice'].apply(lambda x:round(x,2))
-        dfaccounting['buyingprice'] = dfaccounting['buyingprice'].apply(lambda x:round(x,2))
-        dfaccounting['profit'] = dfaccounting['profit'].apply(lambda x:round(x,2))
-        dfaccounting['total'] = dfaccounting['total'].apply(lambda x:round(x,2))
-        return dfaccounting
+    def runanalysis(self, df):
+        df.ta.macd(close='close', fast=12, slow=26, append=True)
+        return df

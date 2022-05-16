@@ -34,5 +34,5 @@ class main:
 
 
 x = main()
-x.macd('AMZN', 'macd')
-x.stoch('AMZN', 'stoch')
+x.macd('QQQ', 'macd')
+x.stoch('QQQ', 'stoch')
