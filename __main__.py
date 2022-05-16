@@ -25,12 +25,12 @@ class main:
         stoch = tastoch.stoch()
         df = stoch.getanalysisdata(df)
         df.to_csv(techanalysis+'_'+ticker+'analysisdata.csv')
-        # df = macd.applystrategy(df)
-        # df.to_csv(techanalysis+'_'+ticker+'strategy.csv')
-        # dfaccounting = macd.strategyanalyzer(df)
-        # print(dfaccounting)
-        # dfaccounting.to_csv(techanalysis+'_'+ticker+'accounting.csv')
-        stoch.plot(df, ticker)
+        df = stoch.applystrategy(df)
+        df.to_csv(techanalysis+'_'+ticker+'strategy.csv')
+        dfaccounting = stoch.strategyanalyzer(df)
+        print(dfaccounting)
+        dfaccounting.to_csv(techanalysis+'_'+ticker+'accounting.csv')
+        stoch.plot(df, ticker, dfaccounting)
 
 
 x = main()

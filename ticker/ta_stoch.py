@@ -2,6 +2,7 @@
 import logging
 from pickletools import markobject
 from symtable import Symbol
+
 import pandas_ta as ta
 import pandas as pd
 from plotly.subplots import make_subplots
@@ -19,12 +20,19 @@ class stoch:
         logging.info("technicalanalysis: done")
         return df
 
-    def plot(self, df, ticker):
+    def plot(self, df, ticker, dfaccounting):
         logging.info("plot: started")
         df.columns = [x.lower() for x in df.columns]
         # Create our primary chart
         # the rows/cols arguments tell plotly we want two figures
-        fig = make_subplots(rows=2, cols=1)  
+        fig = make_subplots(
+            rows=3, cols=1,
+            shared_xaxes=True,
+            vertical_spacing=0.05,
+            specs=[[{"type": "scatter"}],
+                   [{"type": "scatter"}],
+                   [{"type": "table"}]]
+        )
         # Create our Candlestick chart with an overlaid price line
         fig.append_trace(
             go.Candlestick(
@@ -65,6 +73,30 @@ class stoch:
                 name='slow'
             ), row=2, col=1  #<------------ lower chart
         )
+        fig.append_trace(
+            go.Scatter(
+                mode='markers',
+                x=df.index,
+                y=df['buysignal'],
+                marker_symbol='triangle-up',
+                marker_line_width=2,
+                marker_size=10,
+                marker_color='purple',
+                showlegend=True,
+            ), row=1, col=1
+        )
+        fig.append_trace(
+            go.Scatter(
+                mode='markers',
+                x=df.index,
+                y=df['sellsignal'],
+                marker_symbol='triangle-down',
+                marker_line_width=2,
+                marker_size=10,
+                marker_color='pink',
+                showlegend=True
+            ), row=1, col=1
+        )
         # Extend our y-axis a bit
         fig.update_yaxes(range=[-10, 110], row=2, col=1)
         # Add upper/lower bounds
@@ -84,8 +116,18 @@ class stoch:
                 rangeslider=dict(
                     visible=False
                 )
-            )
+            ), title_text=ticker
         )
+        table_obj = go.Table(
+            header=dict(values=list(dfaccounting.columns),
+                        fill_color='paleturquoise', align='left', font=dict(size=10)),
+            cells=dict(
+                values=dfaccounting.transpose().values.tolist(),
+                fill_color='lavender',
+                align='left',
+                font=dict(size=10))
+        )
+        fig.append_trace(table_obj, row=3, col=1)
         fig.update_layout(layout)
         # View our chart in the system default HTML viewer (Chrome, Firefox, etc.)
         fig.show()
@@ -96,11 +138,11 @@ class stoch:
         signal_Sell = []
         position = False
         for i in range(len(df)):
-            if df['macdh_12_26_9'][i-1] > 0 and df['macdh_12_26_9'][i] < 0 and position == True:
+            if df['stochk_14_3_3'][i-1] > df['stochd_14_3_3'][i-1] and df['stochk_14_3_3'][i] < df['stochd_14_3_3'][i] and position == True:
                 signal_Sell.append(df['open'][i])
                 signal_Buy.append(np.nan)
                 position = False
-            elif df['macdh_12_26_9'][i-1] < 0 and df['macdh_12_26_9'][i] > 0:
+            elif df['stochk_14_3_3'][i-1] < df['stochd_14_3_3'][i-1] and df['stochk_14_3_3'][i] > df['stochd_14_3_3'][i]:
                 signal_Buy.append(df['open'][i])
                 signal_Sell.append(np.nan)
                 position = True
@@ -134,6 +176,14 @@ class stoch:
                 total.append(profit[i])
             else:
                 total.append(profit[i] + total[i-1])
+
+# there is a buy but no sell so need to manipulate 
+
+        if len(buyingprice) > len(sellingprice):
+            sellingprice.append(np.nan)
+            profit.append(np.nan)
+            total.append(total[len(total)-1])
+            sellingdate.append(pd.NaT)
 
         accountingset = {
             'buyingprice': buyingprice,

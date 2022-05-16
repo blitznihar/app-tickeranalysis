@@ -190,7 +190,12 @@ class macd:
                 total.append(profit[i])
             else:
                 total.append(profit[i] + total[i-1])
-
+        if len(buyingprice) > len(sellingprice):
+            sellingprice.append(np.nan)
+            profit.append(np.nan)
+            total.append(total[len(total)-1])
+            sellingdate.append(pd.NaT)
+            
         accountingset = {
             'buyingprice': buyingprice,
             'buydate': buyingdate,
